@@ -25,6 +25,8 @@ delay ( void )
 void
 startup ( void )
 {
+	rcc_init ();
+
 	led_init ();
 
 	for ( ;; ) {

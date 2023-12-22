@@ -7,6 +7,7 @@ TOOLS = arm-none-eabi
 # Assembling with gcc makes it want crt0 at link time.
 #AS = $(TOOLS)-gcc
 AS = $(TOOLS)-as
+
 # Use the -g flag if you intend to use gdb
 #CC = $(TOOLS)-gcc -mcpu=cortex-m7 -mthumb -g
 CC = $(TOOLS)-gcc -mcpu=cortex-m7 -mthumb
@@ -17,9 +18,7 @@ OBJCOPY = $(TOOLS)-objcopy
 DUMP = $(TOOLS)-objdump -d
 GDB = $(TOOLS)-gdb
 
-#OBJS = locore.o blink.o
-#OBJS = main.o locore.o
-OBJS = locore.o main.o gpio.o
+OBJS = locore.o main.o gpio.o rcc.o
 
 all: blink.bin blink.dump
 
