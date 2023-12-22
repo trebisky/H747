@@ -12,6 +12,7 @@ gadgets.  Pretty nice.
 My projects:
 
 1. first - learn how to use openocd and examine flash (no code)
+2. debug - simple experiments with openocd and my code
 2. blink - what else?
 
 
