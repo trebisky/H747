@@ -1,5 +1,9 @@
 /* main.c
  * (c) Tom Trebisky  12-20-2023
+ *
+ * This is all about experimenting with openocd to see
+ * if we can learn how to use openocd to monitor a
+ * simple C program.  Indeed we can!
  */
 
 #include "protos.h"
@@ -43,11 +47,17 @@ loaf ( void )
 	    *p = i++;
 	}
 }
-
 void
 startup ( void )
 {
+}
+
+void
+xstartup ( void )
+{
 	u32 *p, *ep;
+
+	for ( ;; ) ;
 
 	p = (u32 *) RAM_BASE;
 	ep = (u32 *) RAM_END;

@@ -12,6 +12,9 @@
 .cpu cortex-m7
 .thumb
 
+# The M7 has a lot more vectors.
+# it doesn't matter (yet) that we don't have
+# them all since we aren't doing any interrupts.
 .word   0x24080000  /* stack top address */
 .word   _reset      /* 1 Reset */
 .word   spin        /* 2 NMI */
@@ -40,6 +43,7 @@ spin:   b spin
 
 .thumb_func
 _reset:
+    ldr	r7,=0xdead
     bl startup
     b .
 
