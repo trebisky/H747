@@ -4,13 +4,13 @@
 
 TOOLS = arm-none-eabi
 
-# Assembling with gcc makes it want crt0 at link time.
+# Assembling with gcc (without -c) makes it want crt0 at link time.
 #AS = $(TOOLS)-gcc
 AS = $(TOOLS)-as
 
 # Use the -g flag if you intend to use gdb
-#CC = $(TOOLS)-gcc -mcpu=cortex-m7 -mthumb -g
-CC = $(TOOLS)-gcc -mcpu=cortex-m7 -mthumb
+#CC = $(TOOLS)-gcc -mcpu=cortex-m7 -mthumb
+CC = $(TOOLS)-gcc -mcpu=cortex-m7 -mthumb -g
 
 #LD = $(TOOLS)-gcc
 LD = $(TOOLS)-ld.bfd
@@ -31,11 +31,11 @@ blink.bin:	blink.elf
 blink.elf: 	$(OBJS)
 	$(LD) -T blink.lds -o blink.elf $(OBJS)
 
-locore.o:	locore.s
-	$(AS) locore.s -o locore.o
+#locore.o:	locore.s
+#	$(AS) locore.s -o locore.o
 
-blink.o:	blink.c
-	$(CC) -c blink.c
+locore.o:	locore.S
+	$(CC) -c locore.S -o locore.o
 
 OCDCFG = -f /usr/share/openocd/scripts/board/stm32h747i-disco.cfg
 

@@ -22,9 +22,13 @@ delay ( void )
 
 #define TWICE
 
+volatile int bongo;
+
 void
 startup ( void )
 {
+	bongo = 1;
+
 	rcc_init ();
 
 	led_init ();

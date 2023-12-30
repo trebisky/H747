@@ -31,8 +31,11 @@ debug.bin:	debug.elf
 debug.elf: 	$(OBJS)
 	$(LD) -T debug.lds -o debug.elf $(OBJS)
 
-locore.o:	locore.s
-	$(AS) locore.s -o locore.o
+#locore.o:	locore.s
+#	$(AS) locore.s -o locore.o
+
+locore.o:	locore.S
+	$(CC) -c locore.S -o locore.o
 
 OCDCFG = -f /usr/share/openocd/scripts/board/stm32h747i-disco.cfg
 

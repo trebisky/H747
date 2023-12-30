@@ -89,6 +89,9 @@ struct rcc {
 	vu32	apb4lpenr;	/* 11c (aliases) */
 };
 
+#define CR_HSE_ON	BIT(16)
+#define CR_HSE_RDY	BIT(17)
+
 #define GPIO_ALL_ENA	0x7ff
 #define GPIO_I_ENA	BIT(8)
 
@@ -96,10 +99,29 @@ void
 rcc_init ( void )
 {
 	struct rcc *rp;
+	int tmo;
 
 	pwr_init ();
 
 	rp = (struct rcc *) RCC_BASE;
+
+	/* Turn on HSE */
+	/* We see this count down from 40,000 to 38,834
+	 */
+	rp->cr |= CR_HSE_ON;
+	tmo = 40000;
+	while ( tmo-- ) {
+	    if ( rp->cr & CR_HSE_RDY )
+		break;
+	}
+
+	// hse_tmo = tmo;
+
+	/* We could turn on HSI48, but we don't */
+
+	/* We should turn off the PLL first,
+	 * but if we are coming out of reset, it will be off
+	 */
 
 	/* turn on all GPIO */
 	// rp->ahb4enr |= GPIO_I_ENA;
