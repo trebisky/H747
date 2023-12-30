@@ -47,9 +47,20 @@ loaf ( void )
 	    *p = i++;
 	}
 }
+
+int result;
+
+void
+addem ( int a, int b )
+{
+	result = a + b;
+}
+
 void
 startup ( void )
 {
+	addem ( 2, 2 );
+	addem ( 2, 3 );
 }
 
 void

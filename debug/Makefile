@@ -9,8 +9,8 @@ TOOLS = arm-none-eabi
 AS = $(TOOLS)-as
 
 # Use the -g flag if you intend to use gdb
-#CC = $(TOOLS)-gcc -mcpu=cortex-m7 -mthumb -g
-CC = $(TOOLS)-gcc -mcpu=cortex-m7 -mthumb
+#CC = $(TOOLS)-gcc -mcpu=cortex-m7 -mthumb
+CC = $(TOOLS)-gcc -mcpu=cortex-m7 -mthumb -g
 
 #LD = $(TOOLS)-gcc
 LD = $(TOOLS)-ld.bfd
