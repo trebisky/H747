@@ -214,6 +214,40 @@ rcc_init ( void )
 
 	gdb3 = rp->pllckselr;
 
+#define PLLDIV_R_SHIFT	24
+#define PLLDIV_Q_SHIFT	16
+#define PLLDIV_P_SHIFT	9
+
+#define PLLDIV_2	1
+#define PLLMUL_96	95
+
+	/* Configure those PLL
+	 * 5 Mhz * 96 - 480 Mhz
+	 */
+	rp->pll1divr =
+	    (PLLDIV_2 << PLLDIV_R_SHIFT) |
+	    (PLLDIV_2 << PLLDIV_Q_SHIFT) |
+	    (PLLDIV_2 << PLLDIV_P_SHIFT) | PLLMUL_96;
+	rp->pll1fracr = 0;
+
+	rp->pll2divr =
+	    (PLLDIV_2 << PLLDIV_R_SHIFT) |
+	    (PLLDIV_2 << PLLDIV_Q_SHIFT) |
+	    (PLLDIV_2 << PLLDIV_P_SHIFT) | PLLMUL_96;
+	rp->pll2fracr = 0;
+
+	rp->pll3divr =
+	    (PLLDIV_2 << PLLDIV_R_SHIFT) |
+	    (PLLDIV_2 << PLLDIV_Q_SHIFT) |
+	    (PLLDIV_2 << PLLDIV_P_SHIFT) | PLLMUL_96;
+	rp->pll3fracr = 0;
+
+	/* Turn them on
+	 */
+	turn_on ( CR_PLL1_ON, CR_PLL1_RDY );
+	turn_on ( CR_PLL2_ON, CR_PLL2_RDY );
+	turn_on ( CR_PLL3_ON, CR_PLL3_RDY );
+
 	/* turn on all GPIO */
 	// rp->ahb4enr |= GPIO_I_ENA;
 	rp->ahb4enr |= GPIO_ALL_ENA;
