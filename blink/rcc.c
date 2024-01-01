@@ -89,39 +89,130 @@ struct rcc {
 	vu32	apb4lpenr;	/* 11c (aliases) */
 };
 
+#define CR_HSI48_ON	BIT(12)
+#define CR_HSI48_RDY	BIT(13)
+
 #define CR_HSE_ON	BIT(16)
 #define CR_HSE_RDY	BIT(17)
+
+#define CR_PLL1_ON	BIT(24)
+#define CR_PLL1_RDY	BIT(25)
+#define CR_PLL2_ON	BIT(26)
+#define CR_PLL2_RDY	BIT(27)
+#define CR_PLL3_ON	BIT(28)
+#define CR_PLL3_RDY	BIT(29)
 
 #define GPIO_ALL_ENA	0x7ff
 #define GPIO_I_ENA	BIT(8)
 
+volatile u32 gdb0;
+volatile u32 gdb1;
+volatile u32 gdb2;
+volatile u32 gdb3;
+
+#define modreg(reg, clr, set ) ( reg = ((reg & (~clr)) | set) )
+// #define MODIFY_REG(REG, CLEARMASK, SETMASK)  WRITE_REG((REG), (((READ_REG(REG)) & (~(CLEARMASK))) | (SETMASK)))
+
+static void
+turn_on ( u32 on, u32 rdy )
+{
+	struct rcc *rp = (struct rcc *) RCC_BASE;
+	int tmo = 40000;
+
+	rp->cr |= on;
+	while ( tmo-- ) {
+	    if ( rp->cr & rdy )
+		break;
+	}
+}
+
+static void
+turn_off ( u32 on, u32 rdy )
+{
+	struct rcc *rp = (struct rcc *) RCC_BASE;
+	int tmo = 40000;
+
+	rp->cr &= ~on;
+	while ( tmo-- ) {
+	    if ( ! (rp->cr & rdy) )
+		break;
+	}
+}
+
+/*
+ * HSI runs at 16 Mhz (can be configured)
+ * HSE runs at 25 Mhz (external crystal)
+ */
+
 void
 rcc_init ( void )
 {
-	struct rcc *rp;
+	struct rcc *rp = (struct rcc *) RCC_BASE;
 	int tmo;
+	u32 val;
 
 	pwr_init ();
 
-	rp = (struct rcc *) RCC_BASE;
+#define	CR_HSIDIV_MASK	(0x3<<3)
+#define	CR_HSIDIV1	(0x0<<3)
+#define	CR_HSIDIV2	(0x1<<3)
+#define	CR_HSIDIV4	(0x2<<3)
+#define	CR_HSIDIV8	(0x3<<3)
+
+
+	/* No MCO, make HSI the system clock.
+	 * Do this before killing PLL
+	 */
+	rp->cfgr = 0;
+
+	turn_off ( CR_PLL1_ON, CR_PLL1_RDY );
+	turn_off ( CR_PLL2_ON, CR_PLL2_RDY );
+	turn_off ( CR_PLL3_ON, CR_PLL3_RDY );
+
+	/* The base HSI clock is 64 Mhz.
+	 * divide by 4 to get 16 Mhz
+	 * Must turn off PLL before doing this.
+	 */
+	modreg ( rp->cr, CR_HSIDIV_MASK, CR_HSIDIV4 );
+
+	gdb0 = 0xdeadbeef;
+	gdb1 = rp->cr;
 
 	/* Turn on HSE */
-	/* We see this count down from 40,000 to 38,834
+	/* We see this count down from 40000 to 38834
 	 */
-	rp->cr |= CR_HSE_ON;
-	tmo = 40000;
-	while ( tmo-- ) {
-	    if ( rp->cr & CR_HSE_RDY )
-		break;
-	}
+	turn_on ( CR_HSE_ON, CR_HSE_RDY );
 
-	// hse_tmo = tmo;
-
-	/* We could turn on HSI48, but we don't */
-
-	/* We should turn off the PLL first,
-	 * but if we are coming out of reset, it will be off
+	/* Why not?  Turn on HSI48 also */
+	/* We see this count down from 40000 to 39981
 	 */
+	turn_on ( CR_HSI48_ON, CR_HSI48_RDY );
+
+	gdb2 = rp->cr;
+
+	/* All PLL must be off to be able to mess with
+	 * the pllckselr.
+	 */
+
+	/* All 3 PLL get the HSE clock */
+#define PLLCK_SEL_MASK	0x3
+#define PLLCK_SEL_HSE	0x2
+	modreg ( rp->pllckselr, PLLCK_SEL_MASK, PLLCK_SEL_HSE );
+
+#define PLLCK_DIV1_MASK	(0x3f << 4)
+#define PLLCK_DIV2_MASK	(0x3f << 12)
+#define PLLCK_DIV3_MASK	(0x3f << 20)
+
+#define PLLCK_DIV1_5	(5 << 4)
+#define PLLCK_DIV2_5	(5 << 12)
+#define PLLCK_DIV3_5	(5 << 20)
+
+	/* All 3 PLL get HSE/5 (i.e. 5 Mhz)  */
+	modreg ( rp->pllckselr, PLLCK_DIV1_MASK, PLLCK_DIV1_5 );
+	modreg ( rp->pllckselr, PLLCK_DIV2_MASK, PLLCK_DIV2_5 );
+	modreg ( rp->pllckselr, PLLCK_DIV3_MASK, PLLCK_DIV3_5 );
+
+	gdb3 = rp->pllckselr;
 
 	/* turn on all GPIO */
 	// rp->ahb4enr |= GPIO_I_ENA;

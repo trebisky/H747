@@ -31,6 +31,9 @@ blink.bin:	blink.elf
 blink.elf: 	$(OBJS)
 	$(LD) -T blink.lds -o blink.elf $(OBJS)
 
+spin.elf: 	spin.o
+	$(LD) -T blink.lds -o spin.elf spin.o
+
 #locore.o:	locore.s
 #	$(AS) locore.s -o locore.o
 
