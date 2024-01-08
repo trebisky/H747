@@ -31,6 +31,12 @@ delay ( void )
 
 volatile int delay_count;
 
+/* Handy place to set a breakpoint */
+void
+next_count ( void )
+{
+}
+
 void
 startup ( void )
 {
@@ -39,6 +45,7 @@ startup ( void )
 	rcc_init ();
 
 	led_init ();
+	usart_init ();
 
 	for ( ;; ) {
 	    delay_count++;

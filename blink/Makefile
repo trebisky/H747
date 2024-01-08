@@ -18,7 +18,7 @@ OBJCOPY = $(TOOLS)-objcopy
 DUMP = $(TOOLS)-objdump -d
 GDB = $(TOOLS)-gdb
 
-OBJS = locore.o main.o gpio.o rcc.o
+OBJS = locore.o main.o gpio.o rcc.o usart.o
 
 all: blink.bin blink.dump
 

@@ -173,7 +173,9 @@ rcc_init ( void )
 	 * divide by 4 to get 16 Mhz
 	 * Must turn off PLL before doing this.
 	 */
-	modreg ( rp->cr, CR_HSIDIV_MASK, CR_HSIDIV4 );
+	// modreg ( rp->cr, CR_HSIDIV_MASK, CR_HSIDIV4 );
+	modreg ( rp->cr, CR_HSIDIV_MASK, CR_HSIDIV8 );
+	// modreg ( rp->cr, CR_HSIDIV_MASK, CR_HSIDIV1 );
 
 	gdb0 = 0xdeadbeef;
 	gdb1 = rp->cr;
@@ -194,7 +196,9 @@ rcc_init ( void )
 	 * the pllckselr.
 	 */
 
-	/* All 3 PLL get the HSE clock */
+	/* All 3 PLL get the same clock,
+	 * we select HSE
+	 */
 #define PLLCK_SEL_MASK	0x3
 #define PLLCK_SEL_HSE	0x2
 	modreg ( rp->pllckselr, PLLCK_SEL_MASK, PLLCK_SEL_HSE );
@@ -242,11 +246,69 @@ rcc_init ( void )
 	    (PLLDIV_2 << PLLDIV_P_SHIFT) | PLLMUL_96;
 	rp->pll3fracr = 0;
 
+	/* the pllcfgr has VCO control fields along with
+	 * enables for the various divider outputs
+	 */
+#define PLL1_FRACEN	BIT(0)
+#define PLL2_FRACEN	BIT(4)
+#define PLL3_FRACEN	BIT(8)
+
+/* 0 is wide (192-836), 1is medium (150-420)
+ */
+#define PLL1_WIDE	BIT(1)
+#define PLL2_WIDE	BIT(5)
+#define PLL3_WIDE	BIT(9)
+
+#define PLL1_R_12	0
+#define PLL1_R_24	(1<<2)
+#define PLL1_R_48	(2<<2)
+#define PLL1_R_816	(3<<2)
+
+#define PLL2_R_12	0
+#define PLL2_R_24	(1<<6)
+#define PLL2_R_48	(2<<6)
+#define PLL2_R_816	(3<<6)
+
+#define PLL3_R_12	0
+#define PLL3_R_24	(1<<10)
+#define PLL3_R_48	(2<<10)
+#define PLL3_R_816	(3<<10)
+
+#define PLL1_PEN	BIT(16)
+#define PLL1_QEN	BIT(17)
+#define PLL1_REN	BIT(18)
+#define PLL2_PEN	BIT(19)
+#define PLL2_QEN	BIT(20)
+#define PLL2_REN	BIT(21)
+#define PLL3_PEN	BIT(22)
+#define PLL3_QEN	BIT(23)
+#define PLL3_REN	BIT(24)
+#define PLL_PQR_ALL	(0x1f<<16)
+
+/* We feed them all 5 Mhz and ask for 480 out */
+#define PLL_VCO		PLL1_R_48 | PLL2_R_48 | PLL3_R_48
+#define PLL_VCO_MASK	0x0fff
+
+	modreg ( rp->pllcfgr, PLL_VCO_MASK, PLL_VCO );
+	rp->pllcfgr |= PLL_PQR_ALL;
+
 	/* Turn them on
 	 */
 	turn_on ( CR_PLL1_ON, CR_PLL1_RDY );
 	turn_on ( CR_PLL2_ON, CR_PLL2_RDY );
 	turn_on ( CR_PLL3_ON, CR_PLL3_RDY );
+
+	rp->d1cfgr = 8;		/* HPRE div/2 */
+
+	/* Switch the system clock from HSI to PLL1-P
+	 */
+
+#define SWS_HSI	0
+#define SWS_CSI	1
+#define SWS_HSE	2
+#define SWS_PLL1_P	3
+
+	rp->cfgr = SWS_PLL1_P;
 
 	/* turn on all GPIO */
 	// rp->ahb4enr |= GPIO_I_ENA;

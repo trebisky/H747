@@ -8,6 +8,8 @@ void led_off ( void );
 
 void rcc_init ( void );
 
+void usart_init ( void );
+
 typedef unsigned int u32;
 typedef volatile unsigned int vu32;
 
