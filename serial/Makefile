@@ -18,7 +18,7 @@ OBJCOPY = $(TOOLS)-objcopy
 DUMP = $(TOOLS)-objdump -d
 GDB = $(TOOLS)-gdb
 
-OBJS = locore.o main.o gpio.o rcc.o
+OBJS = locore.o main.o gpio.o rcc.o usart.o
 
 all: blink.bin blink.dump
 
@@ -55,4 +55,3 @@ burnit2:
 
 clean:
 	rm -f *.o blink.elf blink.bin blink.dump
-	rm -f spin.elf

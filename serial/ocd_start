@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# The board file already specifies the interface.
+#  so this is not necessary.
+#IF=/usr/share/openocd/scripts/interface/stlink.cfg
+#echo $IF
+
+#TG=/usr/share/openocd/scripts/target/stm32h7x.cfg
+TG=/usr/share/openocd/scripts/board/stm32h747i-disco.cfg
+echo $TG
+
+#CMD="openocd -f $IF -f $TG"
+CMD="openocd -f $TG"
+
+echo $CMD
+$CMD
