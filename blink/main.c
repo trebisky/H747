@@ -1,12 +1,15 @@
 /* main.c
  * (c) Tom Trebisky  12-20-2023
+ * First worked 1-11-2024
  */
 
+#include "stdint.h"
 #include "protos.h"
 
-/* This gives a blink rate of about 2.7 Hz */
-/* i.e. the delay time is about 0.2 seconds (200 ms) */
-#define FAST	200
+/* This gives a blink rate of about 2 Hz
+ * (it really does!)
+ */
+#define FAST	500
 
 #define FASTER	50
 #define SLOWER	400
@@ -14,7 +17,7 @@
 /* I use delay_count along with gdb to check this timing
  * I see about 22 counts per second using 1000 in
  * the following.  So 10000 should yield 2.2 counts
- * and 20,000 should yield 1 count.
+ * and 20,000 should yield 1 count.  Maybe.
  */
 
 void

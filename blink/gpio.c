@@ -7,8 +7,8 @@
 void gpio_init ( void );
 void gpio_sr ( u32 );
 
-#define LED_PATTERN1	5	// 0101
-#define LED_PATTERN2	0xa	// 1010
+#define LED_PATTERN1	0x5000	// 0101
+#define LED_PATTERN2	0xa000	// 1010
 
 u32 led_patx, led_paty;
 
@@ -18,8 +18,8 @@ led_init ( void )
 	gpio_init ();
 
 	/* The idea is to blink 2 sets in alternation */
-	led_patx = LED_PATTERN1 << 17 | LED_PATTERN2 << 1;
-	led_paty = LED_PATTERN2 << 17 | LED_PATTERN1 << 1;
+	led_patx = LED_PATTERN1 << 16 | LED_PATTERN2;
+	led_paty = LED_PATTERN2 << 16 | LED_PATTERN1;
 }
 
 void
@@ -34,13 +34,14 @@ led_off ( void )
 	gpio_sr ( led_paty );
 }
 
-/* The four LED are on Gpio "I" - 2,3,4,5
- *  PI2 -- led 1  - green
- *  PI3 -- led 2  - orange
- *  PI4 -- led 3  - red
- *  PI5 -- led 4  - blue
+/* The four LED are on Gpio "I" - 12,13,14,15
+ *  PI12 -- led 1  - green
+ *  PI13 -- led 2  - orange
+ *  PI14 -- led 3  - red
+ *  PI15 -- led 4  - blue
  *
  * pull down (open collector) to turn them on.
+ *  (or just use push/pull)
  */
 
 /* ----------------------------------------------------- */
@@ -123,10 +124,10 @@ gpio_sr ( u32 val )
 void
 gpio_init ( void )
 {
-	led_setup ( 1 );
-	led_setup ( 2 );
-	led_setup ( 3 );
-	led_setup ( 4 );
+	led_setup ( 12 );
+	led_setup ( 13 );
+	led_setup ( 14 );
+	led_setup ( 15 );
 }
 
 /* THE END */
