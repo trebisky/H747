@@ -1,6 +1,6 @@
 A blink demo for the H747
 
-It doesn't work yet.
+Working 1-11-2024
 
 Also I cannot claim this is the first code I have run
 on the H747.  That honor goes to the code in my
