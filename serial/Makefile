@@ -1,4 +1,4 @@
-# Makefile for blink demo
+# Makefile for serial demo
 #
 # First code for the STM32H747
 
@@ -20,19 +20,19 @@ GDB = $(TOOLS)-gdb
 
 OBJS = locore.o main.o gpio.o rcc.o usart.o
 
-all: blink.bin blink.dump
+all: serial.bin serial.dump
 
-blink.dump:	blink.elf
-	$(DUMP) blink.elf >blink.dump
+serial.dump:	serial.elf
+	$(DUMP) serial.elf >serial.dump
 
-blink.bin:	blink.elf
-	$(OBJCOPY) blink.elf blink.bin -O binary
+serial.bin:	serial.elf
+	$(OBJCOPY) serial.elf serial.bin -O binary
 
-blink.elf: 	$(OBJS)
-	$(LD) -T blink.lds -o blink.elf $(OBJS)
+serial.elf: 	$(OBJS)
+	$(LD) -T h747.lds -o serial.elf $(OBJS)
 
 spin.elf: 	spin.o
-	$(LD) -T blink.lds -o spin.elf spin.o
+	$(LD) -T h747.lds -o spin.elf spin.o
 
 #locore.o:	locore.s
 #	$(AS) locore.s -o locore.o
@@ -42,16 +42,17 @@ locore.o:	locore.S
 
 OCDCFG = -f /usr/share/openocd/scripts/board/stm32h747i-disco.cfg
 
-flash:  blink.elf
-	openocd $(OCDCFG) -c "program blink.elf verify reset" -c "exit"
+flash:  serial.elf
+	openocd $(OCDCFG) -c "program serial.elf verify reset" -c "exit"
 
 # Not tested, but this might work ..
 burnit:
-	openocd $(OCDCFG) -c "init" -c "flash write_image erase blink.bin 0x08000000" -c "exit"
+	openocd $(OCDCFG) -c "init" -c "flash write_image erase serial.bin 0x08000000" -c "exit"
 
 # Also not tested
 burnit2:
-	st-flash write blink.bin 0x08000000
+	st-flash write serial.bin 0x08000000
 
 clean:
-	rm -f *.o blink.elf blink.bin blink.dump
+	rm -f *.o serial.elf serial.bin serial.dump
+	rm -f spin.elf
