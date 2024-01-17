@@ -43,7 +43,7 @@ struct rcc {
 	vu32	pll3fracr;	/* 44 */
 	u32	_pad2;
 	vu32	d1ccipr;	/* 4c */
-	vu32	d2ccipr;	/* 50 */
+	vu32	d2ccip1r;	/* 50 */
 	vu32	d2ccip2r;	/* 54 */
 	vu32	d3ccipr;	/* 58 */
 	u32	_pad3;
@@ -298,7 +298,35 @@ rcc_init ( void )
 	turn_on ( CR_PLL2_ON, CR_PLL2_RDY );
 	turn_on ( CR_PLL3_ON, CR_PLL3_RDY );
 
-	rp->d1cfgr = 8;		/* HPRE div/2 */
+
+	/* D1CPRE is the first thing that divides the sys clock.
+	 * we leave it at 0 so we keep the full 480 for CPU1.
+	 * HPRE will then divide by 2 so we get 240 for CPU2.
+	 * We set D1PRE to 4 to send 60 Mhz to APB3/AHB3.
+	 */
+#define D1_CPRE_1	0
+#define D1_HPRE_2	8
+#define D1_PRE_4	(5<<4)
+	/* Set HPRE to 2 so we get a 240 Mhz clock for CPU2
+	 * as well as the various unscaled peripheral clocks
+	 * This is APB3
+	 */
+	rp->d1cfgr = D1_HPRE_2 | D1_PRE_4;
+
+	/* For the D2 domain we also divide the peripheral clocks
+	 * down by 4 to get 60 Mhz.
+	 * This is APB2 and APB1
+	 */
+#define D2_PRE1_4	(5<<4)
+#define D2_PRE2_4	(5<<8)
+	rp->d2cfgr = D2_PRE1_4 | D2_PRE2_4;
+
+	/* For the D3 domain we also divide the peripheral clock
+	 * down by 4 to get 60 Mhz.
+	 * this is APB4
+	 */
+#define D3_PRE_4	(5<<4)
+	rp->d3cfgr = D3_PRE_4;
 
 	/* Switch the system clock from HSI to PLL1-P
 	 */
@@ -308,11 +336,24 @@ rcc_init ( void )
 #define SWS_HSE	2
 #define SWS_PLL1_P	3
 
+	/* select PLL1_P as the sys clock.
+	 * this runs CPU1 at 480 Mhz.
+	 */
 	rp->cfgr = SWS_PLL1_P;
 
 	/* turn on all GPIO */
 	// rp->ahb4enr |= GPIO_I_ENA;
 	rp->ahb4enr |= GPIO_ALL_ENA;
+
+	/* now the UART1 clock
+	 */
+#define UART16_SEL_MASK		(7<<3)
+#define UART16_SEL_PCLK2	0
+	modreg ( rp->d2ccip2r, UART16_SEL_MASK, UART16_SEL_PCLK2 );
+
+#define UART1_ENA	BIT(4)
+	rp->apb2enr |= UART1_ENA;
+	// rp->apb2lpenr |= UART1_ENA;
 }
 
 /* ===================================================== */

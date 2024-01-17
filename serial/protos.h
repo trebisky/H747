@@ -8,7 +8,12 @@ void led_off ( void );
 
 void rcc_init ( void );
 
-void usart_init ( void );
+void uart_init ( void );
+void uart_putc ( int );
+void uart_puts ( char * );
+
+void gpio_init ( void );
+void gpio_uart1_pins ( void );
 
 typedef unsigned int u32;
 typedef volatile unsigned int vu32;

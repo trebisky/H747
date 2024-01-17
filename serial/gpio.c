@@ -4,8 +4,7 @@
 
 #include "protos.h"
 
-void gpio_init ( void );
-void gpio_sr ( u32 );
+static void led_sr ( u32 );
 
 #define LED_PATTERN1	0x5000	// 0101
 #define LED_PATTERN2	0xa000	// 1010
@@ -15,8 +14,6 @@ u32 led_patx, led_paty;
 void
 led_init ( void )
 {
-	gpio_init ();
-
 	/* The idea is to blink 2 sets in alternation */
 	led_patx = LED_PATTERN1 << 16 | LED_PATTERN2;
 	led_paty = LED_PATTERN2 << 16 | LED_PATTERN1;
@@ -25,13 +22,13 @@ led_init ( void )
 void
 led_on ( void )
 {
-	gpio_sr ( led_patx );
+	led_sr ( led_patx );
 }
 
 void
 led_off ( void )
 {
-	gpio_sr ( led_paty );
+	led_sr ( led_paty );
 }
 
 /* The four LED are on Gpio "I" - 12,13,14,15
@@ -89,7 +86,19 @@ struct gpio {
  *  and "lo" has bits 7 - 0
  */
 
-#define GPIO_I_BASE	0x58022000
+#define GPIO_A_BASE	( (struct gpio *) 0x58020000 )
+#define GPIO_B_BASE	( (struct gpio *) 0x58020400 )
+#define GPIO_C_BASE	( (struct gpio *) 0x58020800 )
+#define GPIO_D_BASE	( (struct gpio *) 0x58020C00 )
+
+#define GPIO_E_BASE	( (struct gpio *) 0x58021000 )
+#define GPIO_F_BASE	( (struct gpio *) 0x58021400 )
+#define GPIO_G_BASE	( (struct gpio *) 0x58021800 )
+#define GPIO_H_BASE	( (struct gpio *) 0x58021C00 )
+
+#define GPIO_I_BASE	( (struct gpio *) 0x58022000 )
+#define GPIO_J_BASE	( (struct gpio *) 0x58022400 )
+#define GPIO_K_BASE	( (struct gpio *) 0x58022800 )
 
 static void
 led_setup ( int bit )
@@ -98,7 +107,7 @@ led_setup ( int bit )
 	u32 mask;
 	u32 val;
 
-	gp = (struct gpio *) GPIO_I_BASE;
+	gp = GPIO_I_BASE;
 
 	mask = 0x3 << bit*2;
 	val = gp->mode & ~mask;
@@ -113,10 +122,62 @@ led_setup ( int bit )
 	// no pull up/down seems fine
 }
 
-void
-gpio_sr ( u32 val )
+static void
+alt_setup ( struct gpio *gp, int bit, int alt )
 {
-	struct gpio *gp = (struct gpio *) GPIO_I_BASE;
+	u32 mask;
+	u32 val;
+	u32 shift;
+
+	mask = 0x3 << bit*2;
+	val = gp->mode & ~mask;
+	val |= (MODE_ALT << bit*2);
+	gp->mode = val;
+
+	val = gp->otype & ~BIT(bit);
+	val |= (OT_PP<bit);
+	gp->otype = val;
+
+#define UD_NONE		0
+#define UD_UP		1
+#define UD_DOWN		2
+	mask = 0x3 << bit*2;
+	val = gp->up_down & ~mask;
+	val |= (UD_NONE << bit*2);
+	gp->up_down = val;
+
+	/* Alt function register(s) have 4 bit fields
+	 */
+	if ( bit < 8 ) {
+	    shift = bit * 4;
+	    val = gp->alt_lo & ~(0xf<<shift);
+	    val |= (alt<<shift);
+	    gp->alt_lo = val;
+	} else {
+	    shift = (bit-8) * 4;
+	    val = gp->alt_hi & ~(0xf<<shift);
+	    val |= (alt<<shift);
+	    gp->alt_hi = val;
+	}
+}
+
+/* UART1 has:
+ *
+ *  Tx on PA10
+ *  Rx on PA9
+ */
+void
+gpio_uart1_pins ( void )
+{
+	alt_setup ( GPIO_A_BASE, 9, 7 );
+	alt_setup ( GPIO_A_BASE, 10, 7 );
+}
+
+/* Hack for LED */
+void
+led_sr ( u32 val )
+{
+	struct gpio *gp = GPIO_I_BASE;
 
 	gp->set_reset = val;
 }

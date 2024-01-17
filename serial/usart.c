@@ -41,15 +41,68 @@ struct usart {
 };
 
 #define CR1_FIFO_ENA		BIT(29)
+#define CR1_TX_ENA		BIT(3)
+#define CR1_RX_ENA		BIT(2)
+#define CR1_UART_ENA		BIT(0)
 
 // XXX - alt function pins
 
+/* RCC sets up the peripheral clock at 60 Mhz
+ */
+#define		PCLK	60000000
+
+#define BAUD	115200
+
+
 /* The USART can be used in either FIFO enabled or disabled mode
+ * We use it in the simplest possible mode.
+ * No fifo, no interrupts.
+ * Note that the HAL driver in CubeMX is over 4700 lines of code
+ *  to support the myriad of options possible with the usart.
  */
 
 void
-usart_init ( void )
+uart_init ( void )
 {
+	struct usart *up = UART1_BASE;
+	u32 val;
+	u32 div;
+
+	gpio_uart1_pins ();
+
+	up->cr1 = CR1_RX_ENA | CR1_TX_ENA;
+
+	div = BAUD * 2;
+	val = PCLK + div / 2;
+	val /= div;
+	up->brr = val;
+
+	up->cr1 |= CR1_UART_ENA;
+}
+
+#define ISR_TXE	BIT(7)
+
+void
+uart_putc ( int c )
+{
+	struct usart *up = UART1_BASE;
+
+	while ( ! (up->isr & ISR_TXE) )
+	    ;
+
+	up->tdr = c;
+}
+
+void
+uart_puts ( char *s )
+{
+	int cc;
+
+	while ( cc = *s++ ) {
+	    if ( cc == '\n' )
+		uart_putc ( '\r' );
+	    uart_putc ( cc );
+	}
 }
 
 /* THE END */

@@ -30,15 +30,7 @@ delay ( void )
 	    ;
 }
 
-// #define TWICE
-
 volatile int delay_count;
-
-/* Handy place to set a breakpoint */
-void
-next_count ( void )
-{
-}
 
 void
 startup ( void )
@@ -47,11 +39,15 @@ startup ( void )
 
 	rcc_init ();
 
+	gpio_init ();
 	led_init ();
-	usart_init ();
+	uart_init ();
 
 	for ( ;; ) {
 	    delay_count++;
+
+	    // uart_putc ( 'R' );
+	    uart_puts ( "Game over, insert coin\n"  );
 
 	    led_on ();
 	    delay ();
@@ -59,6 +55,8 @@ startup ( void )
 	    led_off ();
 	    delay ();
 	    delay ();
+
+// #define TWICE
 #ifdef TWICE
 	    led_on ();
 	    delay ();

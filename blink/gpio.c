@@ -89,7 +89,19 @@ struct gpio {
  *  and "lo" has bits 7 - 0
  */
 
+#define GPIO_A_BASE	0x58020000
+#define GPIO_B_BASE	0x58020400
+#define GPIO_C_BASE	0x58020800
+#define GPIO_D_BASE	0x58020C00
+
+#define GPIO_E_BASE	0x58021000
+#define GPIO_F_BASE	0x58021400
+#define GPIO_G_BASE	0x58021800
+#define GPIO_H_BASE	0x58021C00
+
 #define GPIO_I_BASE	0x58022000
+#define GPIO_J_BASE	0x58022400
+#define GPIO_K_BASE	0x58022800
 
 static void
 led_setup ( int bit )
