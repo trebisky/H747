@@ -35,6 +35,8 @@ volatile int delay_count;
 void
 startup ( void )
 {
+	int mode = 0;
+
 	delay_count = 0;
 
 	rcc_init ();
@@ -43,11 +45,20 @@ startup ( void )
 	led_init ();
 	uart_init ();
 
+	uart_puts ( " -- Reset\n"  );
+
 	for ( ;; ) {
 	    delay_count++;
 
 	    // uart_putc ( 'R' );
-	    uart_puts ( "Game over, insert coin\n"  );
+	    if ( mode ) {
+		uart_puts ( "Game over, insert cash\n"  );
+		mode = 0;
+	    }
+	    else {
+		uart_puts ( "Game over, insert coin\n"  );
+		mode = 1;
+	    }
 
 	    led_on ();
 	    delay ();
