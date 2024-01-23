@@ -1,0 +1,194 @@
+/* gpio.c
+ * (c) Tom Trebisky  12-20-2023
+ */
+
+#include "protos.h"
+
+static void led_sr ( u32 );
+
+#define LED_PATTERN1	0x5000	// 0101
+#define LED_PATTERN2	0xa000	// 1010
+
+u32 led_patx, led_paty;
+
+void
+led_init ( void )
+{
+	/* The idea is to blink 2 sets in alternation */
+	led_patx = LED_PATTERN1 << 16 | LED_PATTERN2;
+	led_paty = LED_PATTERN2 << 16 | LED_PATTERN1;
+}
+
+void
+led_on ( void )
+{
+	led_sr ( led_patx );
+}
+
+void
+led_off ( void )
+{
+	led_sr ( led_paty );
+}
+
+/* The four LED are on Gpio "I" - 12,13,14,15
+ *  PI12 -- led 1  - green
+ *  PI13 -- led 2  - orange
+ *  PI14 -- led 3  - red
+ *  PI15 -- led 4  - blue
+ *
+ * pull down (open collector) to turn them on.
+ *  (or just use push/pull)
+ */
+
+/* ----------------------------------------------------- */
+/* ----------------------------------------------------- */
+/* GPIO - we have a bunch (11) of these
+ * RM section 12 (page 568)
+ * Each gpio has 16 bits
+ */
+
+struct gpio {
+	vu32	mode;		/* 0x00 */
+	vu32	otype;		/* 0x04 */
+	vu32	ospeed;		/* 0x08 */
+	vu32	up_down;	/* 0x0c */
+	vu32	in_data;	/* 0x10 */
+	vu32	out_data;	/* 0x14 */
+	vu32	set_reset;	/* 0x18 */
+	vu32	lock;		/* 0x1c */
+	vu32	alt_lo;		/* 0x20 */
+	vu32	alt_hi;		/* 0x24 */
+};
+
+#define MODE_IN		0
+#define MODE_OUT	1
+#define MODE_ALT	2
+#define MODE_ANA	3	// default
+
+#define OT_PP		0	// default (push/pull)
+#define OT_OD		1	// open drain
+
+#define SPEED_LOW	0
+#define SPEED_MED	1
+#define SPEED_HI	2
+#define SPEED_VHI	3
+
+#define PULL_NONE	0
+#define PULL_UP		1
+#define PULL_DONW	2
+
+/* The set/reset register has 16 reset controls in the
+ *  high 16 bits and 16 set controls in the low 16 bits.
+ *
+ * The Alt function control has 4 bits per "bit",
+ *  so "hi" has bits 15 - 8
+ *  and "lo" has bits 7 - 0
+ */
+
+#define GPIO_A_BASE	( (struct gpio *) 0x58020000 )
+#define GPIO_B_BASE	( (struct gpio *) 0x58020400 )
+#define GPIO_C_BASE	( (struct gpio *) 0x58020800 )
+#define GPIO_D_BASE	( (struct gpio *) 0x58020C00 )
+
+#define GPIO_E_BASE	( (struct gpio *) 0x58021000 )
+#define GPIO_F_BASE	( (struct gpio *) 0x58021400 )
+#define GPIO_G_BASE	( (struct gpio *) 0x58021800 )
+#define GPIO_H_BASE	( (struct gpio *) 0x58021C00 )
+
+#define GPIO_I_BASE	( (struct gpio *) 0x58022000 )
+#define GPIO_J_BASE	( (struct gpio *) 0x58022400 )
+#define GPIO_K_BASE	( (struct gpio *) 0x58022800 )
+
+static void
+led_setup ( int bit )
+{
+	struct gpio *gp;
+	u32 mask;
+	u32 val;
+
+	gp = GPIO_I_BASE;
+
+	mask = 0x3 << bit*2;
+	val = gp->mode & ~mask;
+	val |= (MODE_OUT << bit*2);
+	gp->mode = val;
+
+	val = gp->otype & ~BIT(bit);
+	val |= (OT_OD<bit);
+	gp->otype = val;
+
+	// low speed seems fine
+	// no pull up/down seems fine
+}
+
+static void
+alt_setup ( struct gpio *gp, int bit, int alt )
+{
+	u32 mask;
+	u32 val;
+	u32 shift;
+
+	mask = 0x3 << bit*2;
+	val = gp->mode & ~mask;
+	val |= (MODE_ALT << bit*2);
+	gp->mode = val;
+
+	val = gp->otype & ~BIT(bit);
+	val |= (OT_PP<bit);
+	gp->otype = val;
+
+#define UD_NONE		0
+#define UD_UP		1
+#define UD_DOWN		2
+	mask = 0x3 << bit*2;
+	val = gp->up_down & ~mask;
+	val |= (UD_NONE << bit*2);
+	gp->up_down = val;
+
+	/* Alt function register(s) have 4 bit fields
+	 */
+	if ( bit < 8 ) {
+	    shift = bit * 4;
+	    val = gp->alt_lo & ~(0xf<<shift);
+	    val |= (alt<<shift);
+	    gp->alt_lo = val;
+	} else {
+	    shift = (bit-8) * 4;
+	    val = gp->alt_hi & ~(0xf<<shift);
+	    val |= (alt<<shift);
+	    gp->alt_hi = val;
+	}
+}
+
+/* UART1 has:
+ *
+ *  Tx on PA10
+ *  Rx on PA9
+ */
+void
+gpio_uart1_pins ( void )
+{
+	alt_setup ( GPIO_A_BASE, 9, 7 );
+	alt_setup ( GPIO_A_BASE, 10, 7 );
+}
+
+/* Hack for LED */
+void
+led_sr ( u32 val )
+{
+	struct gpio *gp = GPIO_I_BASE;
+
+	gp->set_reset = val;
+}
+
+void
+gpio_init ( void )
+{
+	led_setup ( 12 );
+	led_setup ( 13 );
+	led_setup ( 14 );
+	led_setup ( 15 );
+}
+
+/* THE END */

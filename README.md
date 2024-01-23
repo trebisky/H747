@@ -15,5 +15,4 @@ My projects:
 2. debug - simple experiments with openocd and my code
 3. blink - what else?
 4. serial - something like hello world maybe.
-
-
+5. printf - add printf and a random number hardware driver

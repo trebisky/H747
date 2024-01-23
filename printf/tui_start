@@ -1,0 +1,5 @@
+#!/bin/sh
+
+#arm-none-eabi-gdb -tui --eval-command="target remote localhost:3333"
+#arm-none-eabi-gdb -tui --eval-command="target remote localhost:3333" blink.elf
+arm-none-eabi-gdb -tui --eval-command="target extended-remote localhost:3333" blink.elf
