@@ -7,6 +7,8 @@ USB cable (which also powers the board).  Stlink v3 also gives you
 a serial console as a bonus, so no need for multiple cables and
 gadgets.  Pretty nice.
 
+Some demos run the cpu at 240 Mhz
+
 ***
 
 My projects:
