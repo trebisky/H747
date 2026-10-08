@@ -3,3 +3,5 @@
 *.dump
 *.bin
 *.o
+OLD
+OLD/*

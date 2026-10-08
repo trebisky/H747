@@ -47,9 +47,10 @@ struct usart {
 
 // XXX - alt function pins
 
-/* RCC sets up the peripheral clock at 60 Mhz
+/* RCC sets up the peripheral clock at 30 Mhz
+ * (with cpu at 240 Mhz)
  */
-#define		PCLK	60000000
+#define		PCLK	30000000
 
 #define BAUD	115200
 
@@ -72,7 +73,7 @@ uart_init ( void )
 
 	up->cr1 = CR1_RX_ENA | CR1_TX_ENA;
 
-	div = BAUD * 2;
+	div = BAUD;
 	val = PCLK + div / 2;
 	val /= div;
 	up->brr = val;

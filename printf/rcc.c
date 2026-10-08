@@ -105,6 +105,7 @@ struct rcc {
 #define GPIO_ALL_ENA	0x7ff
 #define GPIO_I_ENA	BIT(8)
 
+/* These will be in BSS area */
 volatile u32 gdb0;
 volatile u32 gdb1;
 volatile u32 gdb2;
@@ -222,12 +223,19 @@ rcc_init ( void )
 #define PLLDIV_Q_SHIFT	16
 #define PLLDIV_P_SHIFT	9
 
+/* This will divide the final output by 2 to
+ * give a sys_clk of 240 Mhz to the CPU.
+ * This also gives a pclk of 30 Mhz
+ */
 #define PLLDIV_2	1
+
+/* Configure all three PLL
+ * 5 Mhz * 96 - 480 Mhz
+ * But we divide the PLL output by 2 (see above)
+ * to get 240 Mhz.
+ */
 #define PLLMUL_96	95
 
-	/* Configure those PLL
-	 * 5 Mhz * 96 - 480 Mhz
-	 */
 	rp->pll1divr =
 	    (PLLDIV_2 << PLLDIV_R_SHIFT) |
 	    (PLLDIV_2 << PLLDIV_Q_SHIFT) |
@@ -286,6 +294,7 @@ rcc_init ( void )
 #define PLL_PQR_ALL	(0x1f<<16)
 
 /* We feed them all 5 Mhz and ask for 480 out */
+/* this gets divided to 240 to go to the cpu */
 #define PLL_VCO		PLL1_R_48 | PLL2_R_48 | PLL3_R_48
 #define PLL_VCO_MASK	0x0fff
 
@@ -337,7 +346,7 @@ rcc_init ( void )
 #define SWS_PLL1_P	3
 
 	/* select PLL1_P as the sys clock.
-	 * this runs CPU1 at 480 Mhz.
+	 * this runs CPU1 at 240 Mhz.
 	 */
 	rp->cfgr = SWS_PLL1_P;
 
@@ -354,6 +363,12 @@ rcc_init ( void )
 #define UART1_ENA	BIT(4)
 	rp->apb2enr |= UART1_ENA;
 	// rp->apb2lpenr |= UART1_ENA;
+
+#define RND_RESET	BIT(6)
+#define RND_ENA		BIT(6)
+	// Get the true random number gadget going
+	// rp->ahb2rstr |= RND_RESET;
+	rp->ahb2enr |= RND_ENA;
 }
 
 /* ===================================================== */

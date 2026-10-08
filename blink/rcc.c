@@ -222,7 +222,9 @@ rcc_init ( void )
 #define PLLDIV_Q_SHIFT	16
 #define PLLDIV_P_SHIFT	9
 
+/* This divides the cpu clock by 2 to get 240 Mhz */
 #define PLLDIV_2	1
+
 #define PLLMUL_96	95
 
 	/* Configure those PLL
@@ -286,6 +288,7 @@ rcc_init ( void )
 #define PLL_PQR_ALL	(0x1f<<16)
 
 /* We feed them all 5 Mhz and ask for 480 out */
+/* later we divide by 2 to send 240 to the cpu */
 #define PLL_VCO		PLL1_R_48 | PLL2_R_48 | PLL3_R_48
 #define PLL_VCO_MASK	0x0fff
 

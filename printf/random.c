@@ -20,9 +20,30 @@ struct random {
 	vu32	data;		/* 08 */
 };
 
+#define CR_ENA	4
+
+#define ST_READY	1
+
 void
 random_init ( void )
 {
+	struct random *rp = RAND_BASE;
+
+	rp->cr = CR_ENA;
+}
+
+u32
+random_next ( void )
+{
+	struct random *rp = RAND_BASE;
+	int tmo = 10000;
+
+	while ( tmo-- )
+	    if ( rp->status & ST_READY )
+		return rp->data;
+
+	printf ( "Random: %08x %08x\n", rp->cr, rp->status );
+	return 0;
 }
 
 /* THE END */

@@ -16,9 +16,38 @@ MEMORY
 
 SECTIONS
 {
-   .text : {
+   .text :
+   {
        *(.vectors*)
        *(.text*)
+       . = ALIGN(4);
+       __text_end = .;
+       _etext = .;
    } > flash
-   .bss  : { *(.bss*) } > sram
+
+   .bss  :
+   {
+       . = ALIGN(4);
+       __bss_start = .;
+       *(.bss*)
+       *(COMMON)
+       . = ALIGN(4);
+       __bss_end = .;
+   } > sram
+
+   .data :
+   {
+       . = ALIGN(4);
+       __data_start = .;
+       *(.data*)
+       . = ALIGN(4);
+       __data_end = .;
+   } > sram AT> flash
+
+   .rodata :
+   {
+       . = ALIGN(4);
+       *(.rodata*)
+       . = ALIGN(4);
+   } > flash
 }

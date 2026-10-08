@@ -222,7 +222,9 @@ rcc_init ( void )
 #define PLLDIV_Q_SHIFT	16
 #define PLLDIV_P_SHIFT	9
 
+/* Divide the final PLL output by 2 to get 240 Mhz */
 #define PLLDIV_2	1
+
 #define PLLMUL_96	95
 
 	/* Configure those PLL
@@ -286,6 +288,7 @@ rcc_init ( void )
 #define PLL_PQR_ALL	(0x1f<<16)
 
 /* We feed them all 5 Mhz and ask for 480 out */
+/* We divide by 2 to 240 before sending to cpu */
 #define PLL_VCO		PLL1_R_48 | PLL2_R_48 | PLL3_R_48
 #define PLL_VCO_MASK	0x0fff
 
@@ -300,8 +303,8 @@ rcc_init ( void )
 
 
 	/* D1CPRE is the first thing that divides the sys clock.
-	 * we leave it at 0 so we keep the full 480 for CPU1.
-	 * HPRE will then divide by 2 so we get 240 for CPU2.
+	 * we leave it at 0 so we keep the full 240 for CPU1.
+	 * HPRE will then divide by 2 so we get 120 for CPU2.
 	 * We set D1PRE to 4 to send 60 Mhz to APB3/AHB3.
 	 */
 #define D1_CPRE_1	0
@@ -337,7 +340,7 @@ rcc_init ( void )
 #define SWS_PLL1_P	3
 
 	/* select PLL1_P as the sys clock.
-	 * this runs CPU1 at 480 Mhz.
+	 * this runs CPU1 at 240 Mhz.
 	 */
 	rp->cfgr = SWS_PLL1_P;
 
